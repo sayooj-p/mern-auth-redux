@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { type } from "os";
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -20,6 +19,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    profilePicture:{
+      type: String,
+      default: "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg?semt=ais_hybrid&w=740",
+    }
   },
   { timestamps: true }
 );
