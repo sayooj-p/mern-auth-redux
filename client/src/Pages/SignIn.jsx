@@ -10,8 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 function SignIn() {
   const [formData, setFormData] = useState({});
   const { loading, error } = useSelector((state) => state.user);
-  console.log(loading, error);
-  
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const handleChange = (e) => {
@@ -49,7 +48,9 @@ function SignIn() {
   return (
     <div className="p-3 max-w-lg mx-auto mt-10">
       <h1 className="text-3xl text-center font-semibold my-7">Sign In</h1>
-      <p className="text-red-700 mb-2 text-center">{error ? error.message || "something went wrong!" : ""}</p>
+      <p className="text-red-700 mb-2 text-center">
+        {error ? error.message || "something went wrong!" : ""}
+      </p>
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <input
