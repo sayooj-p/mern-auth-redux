@@ -30,7 +30,7 @@ function Profile() {
     }
 
     setImage(file);
-    setPreviewImage(URL.createObjectURL(file)); // show preview
+    setPreviewImage(URL.createObjectURL(file)); 
   };
 
   const handleUploadImage = async (file) => {
@@ -49,7 +49,6 @@ function Profile() {
       );
       const uploadedImage = await res.json();
       console.log("Image URL:", uploadedImage.url);
-      // You can update state or send this URL to your backend here
     } catch (err) {
       console.error("Upload failed:", err);
       setError("Image upload failed.");
