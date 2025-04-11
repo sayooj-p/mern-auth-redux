@@ -1,12 +1,27 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-
+import { useDispatch } from "react-redux";
+import { updateUserFailure,updateUserStart,updateUserSuccess } from "../redux/user/userSlice";
 function Profile() {
   const [image, setImage] = useState(undefined);
   const [previewImage, setPreviewImage] = useState("");
   const [error, setError] = useState("");
+  const dispatch = useDispatch();
+  const [formData, setFormData] = useState({});
+  const [updateSucess,setUpdateSucess] = useState(false);
+
   const fileRef = useRef();
   const { currentUser } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    // Pre-fill current user data
+    setFormData({
+      username: currentUser.username,
+      email: currentUser.email,
+      password: "",
+      profilePicture: currentUser.profilePicture,
+    });
+  }, [currentUser]);
 
   useEffect(() => {
     if (image) {
@@ -16,9 +31,8 @@ function Profile() {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setError(""); // Reset error message
+    setError("");
 
-    // Validations
     if (!file) return;
     if (!file.type.startsWith("image/")) {
       setError("Only image files are allowed.");
@@ -30,7 +44,7 @@ function Profile() {
     }
 
     setImage(file);
-    setPreviewImage(URL.createObjectURL(file)); 
+    setPreviewImage(URL.createObjectURL(file));
   };
 
   const handleUploadImage = async (file) => {
@@ -48,17 +62,62 @@ function Profile() {
         }
       );
       const uploadedImage = await res.json();
-      console.log("Image URL:", uploadedImage.url);
+
+      setFormData((prev) => ({
+        ...prev,
+        profilePicture: uploadedImage.url,
+      }));
     } catch (err) {
       console.error("Upload failed:", err);
       setError("Image upload failed.");
     }
   };
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(updateUserStart());
+  
+      // Clone formData to avoid mutating the state directly
+      const updatedData = { ...formData };
+  
+      // Remove password if it's empty
+      if (!updatedData.password) {
+        delete updatedData.password;
+      }
+  
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedData),
+      });
+  
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data));
+        return;
+      }
+  
+      dispatch(updateUserSuccess(data));
+      setUpdateSucess(true);
+    } catch (error) {
+      dispatch(updateUserFailure(error));
+      console.error("Update failed:", error);
+      setError("Profile update failed.");
+    }
+  };
+  
+
   return (
     <div className="max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
-      <form className="flex flex-col gap-4">
+      <p className="text-green-700 text-center mt-5">{updateSucess && 'User Updated Succesfully!'}</p>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="file"
           ref={fileRef}
@@ -66,12 +125,15 @@ function Profile() {
           accept="image/*"
           onChange={handleFileChange}
         />
-        <img
-          className="h-24 w-24 self-center cursor-pointer rounded-full object-cover mt-2"
-          src={previewImage || currentUser.profilePicture}
-          onClick={() => fileRef.current.click()}
-          alt="profile"
-        />
+        {(previewImage || formData.profilePicture) && (
+          <img
+            className="h-24 w-24 self-center cursor-pointer rounded-full object-cover mt-2"
+            src={previewImage || formData.profilePicture}
+            onClick={() => fileRef.current.click()}
+            alt="profile"
+          />
+        )}
+
         {error && (
           <p className="text-red-600 text-sm text-center -mt-2">{error}</p>
         )}
@@ -79,23 +141,30 @@ function Profile() {
           type="text"
           id="username"
           placeholder="Username"
-          defaultValue={currentUser.username}
+          value={formData.username}
+          onChange={handleChange}
           className="bg-slate-100 rounded-lg p-3"
         />
         <input
           type="email"
           id="email"
           placeholder="Email"
-          defaultValue={currentUser.email}
+          value={formData.email}
+          onChange={handleChange}
           className="bg-slate-100 rounded-lg p-3"
         />
         <input
           type="password"
           id="password"
           placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
           className="bg-slate-100 rounded-lg p-3"
         />
-        <button className="bg-slate-700 p-3 rounded-lg uppercase text-white hover:opacity-95 disabled:opacity-80">
+        <button
+          type="submit"
+          className="bg-slate-700 cursor-pointer p-3 rounded-lg uppercase text-white hover:opacity-95 disabled:opacity-80"
+        >
           Update
         </button>
       </form>
