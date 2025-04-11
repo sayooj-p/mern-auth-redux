@@ -1,14 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { updateUserFailure,updateUserStart,updateUserSuccess } from "../redux/user/userSlice";
+import {
+  updateUserFailure,
+  updateUserStart,
+  updateUserSuccess,
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
+} from "../redux/user/userSlice";
 function Profile() {
   const [image, setImage] = useState(undefined);
   const [previewImage, setPreviewImage] = useState("");
   const [error, setError] = useState("");
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({});
-  const [updateSucess,setUpdateSucess] = useState(false);
+  const [updateSucess, setUpdateSucess] = useState(false);
 
   const fileRef = useRef();
   const { currentUser } = useSelector((state) => state.user);
@@ -80,15 +87,15 @@ function Profile() {
     e.preventDefault();
     try {
       dispatch(updateUserStart());
-  
+
       // Clone formData to avoid mutating the state directly
       const updatedData = { ...formData };
-  
+
       // Remove password if it's empty
       if (!updatedData.password) {
         delete updatedData.password;
       }
-  
+
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
         method: "PUT",
         headers: {
@@ -96,13 +103,13 @@ function Profile() {
         },
         body: JSON.stringify(updatedData),
       });
-  
+
       const data = await res.json();
       if (data.success === false) {
         dispatch(updateUserFailure(data));
         return;
       }
-  
+
       dispatch(updateUserSuccess(data));
       setUpdateSucess(true);
     } catch (error) {
@@ -111,12 +118,34 @@ function Profile() {
       setError("Profile update failed.");
     }
   };
-  
+  const handleDelete = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data));
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      dispatch(deleteUserFailure(error));
+      console.error("Delete failed:", error);
+      setError("Account deletion failed.");
+    }
+  };
 
   return (
     <div className="max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
-      <p className="text-green-700 text-center mt-5">{updateSucess && 'User Updated Succesfully!'}</p>
+      <p className="text-green-700 text-center mt-5">
+        {updateSucess && "User Updated Succesfully!"}
+      </p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="file"
@@ -169,7 +198,9 @@ function Profile() {
         </button>
       </form>
       <div className="flex justify-between mt-5">
-        <span className="text-red-700 cursor-pointer">Delete Account</span>
+        <span onClick={handleDelete} className="text-red-700 cursor-pointer">
+          Delete Account
+        </span>
         <span className="text-red-700 cursor-pointer">Sign Out</span>
       </div>
     </div>
