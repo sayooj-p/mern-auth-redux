@@ -8,6 +8,7 @@ import SignUp from '../Pages/SignUp'
 import PrivateRouter from '../Components/PrivateRouter'
 import Profile from '../Pages/Profile'
 import AdminHome from '../Pages/AdminHome'
+import EditAdmin from '../Pages/editAdmin'
 
 function AppRoutes() {
   return (
@@ -23,6 +24,7 @@ function AppRoutes() {
         <Route path='/profile' element={<Profile/>}/>
         </Route>
         <Route path='/admin' element={<AdminHome/>}/>
+        <Route path='/editAdmin/:id' element={<EditAdmin/>}/>
       </Routes>
       </BrowserRouter>
       
