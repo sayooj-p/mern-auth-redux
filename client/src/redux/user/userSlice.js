@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-
 const initialState = {
   currentUser: null,
   loading: false,
   error: false,
+ 
 };
 const userSlice = createSlice({
   name: "user",
@@ -50,7 +50,8 @@ const userSlice = createSlice({
       state.currentUser = null;
       state.loading = false;
       state.error = false;
-    }
+    },
+    
   },
 });
 export const {
@@ -63,6 +64,8 @@ export const {
   deleteUserFailure,
   deleteUserStart,
   deleteUserSuccess,
-  signOut
+  signOut,
+  increment,
+  decrement
 } = userSlice.actions;
 export default userSlice.reducer;

@@ -36,10 +36,10 @@ function SignIn() {
       }
       dispatch(signInSuccess(data));
 
-      if (data.isAdmin == false) {
+      if (data.isAdmin === false) {
         navigate("/");
       } else {
-        setError("Admin access is not allowed.");
+        navigate("/admin");
       }
     } catch (error) {
       dispatch(signInFailure(error));
