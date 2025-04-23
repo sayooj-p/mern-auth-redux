@@ -65,7 +65,7 @@ function AdminHome() {
           User Management
         </h2>
 
-        {/* ✅ Search Bar */}
+        
         <div className="mb-4 flex justify-end">
           <input
             type="text"
@@ -93,16 +93,16 @@ function AdminHome() {
             <div className="md:text-center font-medium">{index + 1}</div>
             <div className="md:text-center">{user.username}</div>
             <div className="md:text-center break-words">{user.email}</div>
-            <div className="md:text-center">
+            <div className="md:text-center ">
               <button
-                className="text-blue-500 hover:underline px-3"
+                className="text-white hover:underline  border-1 px-3 bg-green-400 p-2 rounded-lg mx-2 cursor-pointer"
                 onClick={() => navigate(`/editAdmin/${user._id}`)}
               >
                 Edit
               </button>
               <button
                 onClick={() => handleDelete(user._id)}
-                className="text-red-500 hover:underline"
+                className="text-white border-1 bg-red-400 hover:underline rounded-lg p-2 cursor-pointer"
               >
                 Delete
               </button>

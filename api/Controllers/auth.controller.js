@@ -8,6 +8,14 @@ export const signup = async (req, res, next) => {
   const hashedPassword = bcryptjs.hashSync(password, 10);
   const newUser = new User({ username, email, password: hashedPassword });
   try {
+    const existEmail = await User.findOne({email});
+    const existUsername = await User.findOne({username});
+    if(existUsername) {
+      return next(errorHandler(400,"Username already taken"))
+    }
+    if(existEmail) {
+      return next(errorHandler(400,"Email already exists"))
+    }
     await newUser.save();
     res.status(201).json({ message: "User created successfully!" });
   } catch (error) {

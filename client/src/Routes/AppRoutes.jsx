@@ -13,7 +13,7 @@ import EditAdmin from '../Pages/editAdmin'
 function AppRoutes() {
   return (
     <div>
-              <BrowserRouter>
+      <BrowserRouter>
       <Header/>
       <Routes>
         <Route path='/' element={<Home/>}/>
@@ -23,8 +23,10 @@ function AppRoutes() {
         <Route element={<PrivateRouter/>}>
         <Route path='/profile' element={<Profile/>}/>
         </Route>
+        <Route element={<PrivateRouter/>}>
         <Route path='/admin' element={<AdminHome/>}/>
         <Route path='/editAdmin/:id' element={<EditAdmin/>}/>
+        </Route>
       </Routes>
       </BrowserRouter>
       

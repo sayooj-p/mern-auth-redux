@@ -1,6 +1,6 @@
+
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   updateUserFailure,
   updateUserStart,
@@ -8,16 +8,25 @@ import {
   deleteUserFailure,
   deleteUserStart,
   deleteUserSuccess,
-  signOut
+  signOut,
 } from "../redux/user/userSlice";
+
 function Profile() {
   const [image, setImage] = useState(undefined);
   const [previewImage, setPreviewImage] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState({});
   const dispatch = useDispatch();
-  const [formData, setFormData] = useState({});
-  const [updateSucess, setUpdateSucess] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    profilePicture: "",
+  });
+ 
+  const [updateSuccess, setUpdateSuccess] = useState(false);
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
   const fileRef = useRef();
   const { currentUser } = useSelector((state) => state.user);
 
@@ -43,11 +52,17 @@ function Profile() {
 
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      setError("Only image files are allowed.");
+      setError((prev) => ({
+        ...prev,
+        image: "Please select a valid image file.",
+      }));
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      setError("Image size must be less than 2MB.");
+      setError((prev) => ({
+        ...prev,
+        image: "File size exceeds 2MB.",
+      }));
       return;
     }
 
@@ -77,28 +92,56 @@ function Profile() {
       }));
     } catch (err) {
       console.error("Upload failed:", err);
-      setError("Image upload failed.");
+      setError((prev) => ({
+        ...prev,
+        image: "Image upload failed.",
+      }));
     }
   };
+  const validationCheck = () =>{
+    const errors = {};
+    if(!formData.email) {
+      errors.email = "Email is Required";
+    }else if(!emailRegex.test(formData.email)) {
+      errors.email = "Please Enter a Valid Email";
+    }
+
+    if(formData.password && !passwordRegex.test(formData.password)) {
+      errors.password = "Password not valid format (8 characters, 1 uppercase, 1 lowercase, 1 number)";
+    }
+
+    setError(errors);
+    return Object.keys(errors).length === 0;
+  }
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
+    setError((prev) => ({
+      ...prev,
+      [e.target.id]: "",
+      server:""
+    })); 
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError({}); 
+    setUpdateSuccess(false); 
+    if (!validationCheck()) {
+      return;
+    }
+
     try {
       dispatch(updateUserStart());
 
-      // Clone formData to avoid mutating the state directly
       const updatedData = { ...formData };
 
-      // Remove password if it's empty
       if (!updatedData.password) {
-        delete updatedData.password;
+        delete updatedData.password; 
       }
 
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
-        method: "PUT",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -106,19 +149,34 @@ function Profile() {
       });
 
       const data = await res.json();
+
       if (data.success === false) {
-        dispatch(updateUserFailure(data));
+        dispatch(updateUserFailure(data.message));
+        setError((prev) => ({
+          ...prev,
+          server: data.message,
+        })); 
         return;
       }
 
       dispatch(updateUserSuccess(data));
-      setUpdateSucess(true);
+      setUpdateSuccess(true);
+      setFormData((prev) => ({
+        ...prev,
+        password: "", 
+      }));
     } catch (error) {
-      dispatch(updateUserFailure(error));
+      dispatch(updateUserFailure(error.message));
       console.error("Update failed:", error);
-      setError("Profile update failed.");
+      setError((
+        prev) => ({
+          ...prev,
+          server: "Update failed.",
+        }     
+      ));
     }
   };
+
   const handleDelete = async () => {
     try {
       dispatch(deleteUserStart());
@@ -130,32 +188,45 @@ function Profile() {
       });
       const data = await res.json();
       if (data.success === false) {
-        dispatch(deleteUserFailure(data));
+        dispatch(deleteUserFailure(data.message));
+        setError((prev) => ({
+          ...prev,
+          server: data.message,
+        }));
         return;
       }
       dispatch(deleteUserSuccess(data));
     } catch (error) {
-      dispatch(deleteUserFailure(error));
+      dispatch(deleteUserFailure(error.message));
       console.error("Delete failed:", error);
-      setError("Account deletion failed.");
+      setError((prev) => ({
+        ...prev,
+        server: "Delete failed.",
+      }));
     }
   };
+
   const handleSignOut = async () => {
     try {
       await fetch("/api/auth/signout");
       dispatch(signOut());
     } catch (error) {
-      console.log(error);
-      
+      console.error("Sign out failed:", error);
     }
-  }
+  };
 
   return (
     <div className="max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
-      <p className="text-green-700 text-center mt-5">
-        {updateSucess && "User Updated Succesfully!"}
-      </p>
+      {updateSuccess && (
+        <p className="text-green-700 text-center mt-5">
+          User Updated Successfully!
+        </p>
+      )}
+      {error && (
+        <p className="text-red-600 text-center mt-5">{error.server}</p>
+      )}
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="file"
@@ -167,39 +238,51 @@ function Profile() {
         {(previewImage || formData.profilePicture) && (
           <img
             className="h-24 w-24 self-center cursor-pointer rounded-full object-cover mt-2"
-            src={previewImage || formData.profilePicture}
+            src={previewImage || formData.profilePicture || defaultImage}
             onClick={() => fileRef.current.click()}
             alt="profile"
           />
         )}
-
-        {error && (
-          <p className="text-red-600 text-sm text-center -mt-2">{error}</p>
+        {error.image && (
+          <p className="text-red-600 text-sm mt-1 text-center">{error.image}</p>
         )}
+
+      
         <input
           type="text"
           id="username"
           placeholder="Username"
-          value={formData.username}
+          value={formData.username || ""}
           onChange={handleChange}
           className="bg-slate-100 rounded-lg p-3"
         />
+        
+        
         <input
           type="email"
           id="email"
           placeholder="Email"
-          value={formData.email}
+          value={formData.email || ""}
           onChange={handleChange}
           className="bg-slate-100 rounded-lg p-3"
         />
+        {error.email && (
+          <p className="text-red-600 text-sm mt-1 text-center">{error.email}</p>
+        )}
+        
+        
         <input
           type="password"
           id="password"
           placeholder="Password"
-          value={formData.password}
+          value={formData.password || ""}
           onChange={handleChange}
           className="bg-slate-100 rounded-lg p-3"
         />
+        {error.password && (
+          <p className="text-red-600 text-center text-sm mt-1">{error.password}</p>
+        )}
+        
         <button
           type="submit"
           className="bg-slate-700 cursor-pointer p-3 rounded-lg uppercase text-white hover:opacity-95 disabled:opacity-80"
@@ -211,7 +294,9 @@ function Profile() {
         <span onClick={handleDelete} className="text-red-700 cursor-pointer">
           Delete Account
         </span>
-        <span onClick={handleSignOut} className="text-red-700 cursor-pointer">Sign Out</span>
+        <span onClick={handleSignOut} className="text-red-700 cursor-pointer">
+          Sign Out
+        </span>
       </div>
     </div>
   );

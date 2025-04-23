@@ -12,7 +12,7 @@ function Header() {
     <div className="bg-gray-300">
       <div className="h-[50px] flex justify-between items-center max-w-6xl mx-auto">
         <h1 className="font-semibold text-xl">
-          {isAdmin ? "Admin Management" : "User Management"}
+          {isAdmin ? "Admin Panel" : "User Panel"}
         </h1>
 
         <ul className="flex gap-4">

@@ -1,21 +1,37 @@
+// backend/controllers/user.controller.js
 import { errorHandler } from "../utils/error.js";
 import bcryptjs from "bcryptjs";
 import User from "../models/user.model.js";
+
 export const test = (req, res) => {
   res.json({
     message: "API is working!",
   });
 };
 
-//update user
-export const updateUser = async (req, res) => {
+// Update user
+export const updateUser = async (req, res, next) => {
   if (req.user.id !== req.params.id) {
     return next(errorHandler(401, "You can only update your account!"));
   }
   try {
+    // Check for existing email
+    const existingEmail = await User.findOne({ email: req.body.email });
+    if (existingEmail && existingEmail._id.toString() !== req.params.id) {
+      return next(errorHandler(400, "Email is already in use!"));
+    }
+
+    // Check for existing username
+    const existingUsername = await User.findOne({ username: req.body.username });
+    if (existingUsername && existingUsername._id.toString() !== req.params.id) {
+      return next(errorHandler(400, "Username is already taken!"));
+    }
+
+    // Hash password if provided
     if (req.body.password) {
       req.body.password = bcryptjs.hashSync(req.body.password, 10);
     }
+
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
       {
@@ -24,10 +40,11 @@ export const updateUser = async (req, res) => {
           email: req.body.email,
           password: req.body.password,
           profilePicture: req.body.profilePicture,
-        }
+        },
       },
       { new: true }
     );
+
     const { password, ...rest } = updatedUser._doc;
     res.status(200).json(rest);
   } catch (error) {
@@ -35,9 +52,8 @@ export const updateUser = async (req, res) => {
   }
 };
 
-
-//delete user
-export const deleteUser = async (req, res) => {
+// Delete user
+export const deleteUser = async (req, res, next) => {
   if (req.user.id !== req.params.id) {
     return next(errorHandler(401, "You can only delete your account!"));
   }

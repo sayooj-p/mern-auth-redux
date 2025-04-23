@@ -5,7 +5,7 @@ import { updateUser} from "../Controllers/user.controller.js";
 
 const router = express.Router();
 router.get("/", test);
-router.put('/update/:id',verifyToken,updateUser);
+router.post('/update/:id',verifyToken,updateUser);
 router.delete('/delete/:id',verifyToken,deleteUser);
 
 export default router;
