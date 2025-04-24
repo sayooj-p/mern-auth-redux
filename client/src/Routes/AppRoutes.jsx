@@ -7,9 +7,11 @@ import SignIn from '../Pages/SignIn'
 import SignUp from '../Pages/SignUp'
 import PrivateRouter from '../Components/PrivateRouter'
 import Profile from '../Pages/Profile'
+import AdminUsers from '../Pages/AdminUsers'
 import AdminHome from '../Pages/AdminHome'
-import EditAdmin from '../Pages/editAdmin'
+import EditAdmin from '../Pages/EditAdmin'
 
+import AdminPrivateRouter from '../Components/AdminPrivateRouter'
 function AppRoutes() {
   return (
     <div>
@@ -23,10 +25,12 @@ function AppRoutes() {
         <Route element={<PrivateRouter/>}>
         <Route path='/profile' element={<Profile/>}/>
         </Route>
-        <Route element={<PrivateRouter/>}>
+        <Route element={<AdminPrivateRouter/>}>
         <Route path='/admin' element={<AdminHome/>}/>
+        <Route path='/admin/users' element={<AdminUsers/>}/>
         <Route path='/editAdmin/:id' element={<EditAdmin/>}/>
         </Route>
+        
       </Routes>
       </BrowserRouter>
       

@@ -5,14 +5,14 @@ import { useSelector } from "react-redux";
 function Header() {
   const { currentUser } = useSelector((state) => state.user);
  
-
+const logo = "../public/ums.png"
   const isAdmin = currentUser?.isAdmin;
 
   return (
     <div className="bg-gray-300">
-      <div className="h-[50px] flex justify-between items-center max-w-6xl mx-auto">
+      <div className="h-auto flex justify-between items-center max-w-6xl mx-auto">
         <h1 className="font-semibold text-xl">
-          {isAdmin ? "Admin Panel" : "User Panel"}
+          <img className="w-[60px] h-[60px] m-1" src={logo} alt="logo" />
         </h1>
 
         <ul className="flex gap-4">
@@ -20,6 +20,12 @@ function Header() {
             <>
               <Link to="/admin">
                 <li>Home</li>
+              </Link>
+              <Link to="/admin/users">
+              Users
+              </Link>
+              <Link to="/about">
+                <li>About</li>
               </Link>
               <Link to="/profile">
                 {currentUser ? (

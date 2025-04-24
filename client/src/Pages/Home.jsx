@@ -1,9 +1,8 @@
 import React from "react";
-
 function Home() {
   return (
     <div className="flex flex-col items-center  h-screen bg-gray-100">
-      <h1 className="text-3xl text-red-400 mt-10 font-bold "> USER HOME </h1>
+      <h1 className="text-3xl text-red-400 mt-10 font-bold "> User Home </h1>
     <div className="max-w-2xl mx-auto mt-3 p-5 bg-white shadow-lg rounded-lg">
     <p className="text-lg text-gray-950 font-semibold mt-4">
         This web application's homepage is built using the MERN stack, combining

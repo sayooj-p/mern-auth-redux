@@ -37,6 +37,8 @@ function SignIn() {
     setError(errors);
     return Object.keys(errors).length === 0;
   };
+  console.log("loading", loading);
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validationCheck()) {
